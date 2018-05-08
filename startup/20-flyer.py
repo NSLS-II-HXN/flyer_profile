@@ -85,6 +85,7 @@ class Flyer:
         self.hxn_stage = stage
         self.motor = motor
         self._traj_info = {}
+        self._datum_ids = []
 
     def stage(self):
         self.detector.stage()
@@ -107,16 +108,17 @@ class Flyer:
 
     def describe_collect(self):
         return {
-            'data_keys':
-                {'x': {'source': self.motor.x._readpv.pvname,
+            'hxn_stage_flyer':
+                {'x': {'source': '',
                        'dtype': 'number',
                        'shape': []},
-                 'y': {'source': self.motor.y._readpv.pvname,
+                 'y': {'source': '',
                        'dtype': 'number',
                        'shape': []},
                  'image': {'source': '...',
                            'dtype': 'array',
-                           'shape': []}  # TODO
+                           'shape': [],  # TODO
+                           'external': 'FILESTORE:'}
                  }
                 }
 
@@ -124,6 +126,7 @@ class Flyer:
         # Get the Resource which was produced when the detector was staged.
         (name, resource), = self.detector.tiff.collect_asset_docs()
         assert name == 'resource'
+        self._datum_ids.clear()
         # Generate Datum documents from scratch here, because the detector was
         # triggered externally by the DeltaTau, never by ophyd.
         _, datum_factory = resource_factory(
@@ -132,7 +135,6 @@ class Flyer:
             resource_path=resource['resource_path'],
             resource_kwargs=resource['resource_kwargs'],
             path_semantics=resource['path_semantics'])
-        self._datum_ids = []
         num_points = self._traj_info['nx'] * self._traj_info['ny']
         for i in range(num_points):
             datum = datum_factory({'point_number': i})
@@ -140,7 +142,7 @@ class Flyer:
             yield 'datum', datum
 
     def collect(self):
-        for i, datum_id in enumerate(datum_id):
+        for i, datum_id in enumerate(self._datum_ids):
             now = time.time()
             yield {
                 'data': {
@@ -152,7 +154,8 @@ class Flyer:
                     'y': now,
                     'image': now},
                 'time': now,
-                'seq_num': 1 + i}
+                'seq_num': 1 + i,
+                'filled': {'image': False}}
 
 
 class FakeFlyer(Flyer):
