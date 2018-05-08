@@ -4,7 +4,6 @@ import itertools
 import time
 from ophyd import EpicsMotor, MotorBundle, Component, EpicsSignal, Device
 from ophyd.status import SubscriptionStatus
-from ophyd.areadetector.filestore_mixins import resource_factory
 
 
 class XYMotor(MotorBundle):
@@ -15,7 +14,7 @@ class XYMotor(MotorBundle):
 motor = XYMotor('HXN{2DStage}V', name='motor')
 
 
-class Stage(Device):
+class HXNStage(Device):
     x_start = Component(EpicsSignal, 'XStart-RB', write_pv='XStart')
     x_stop = Component(EpicsSignal, 'XStop-RB', write_pv='XStop')
     nx = Component(EpicsSignal, 'NX-RB', write_pv='NX')
@@ -27,69 +26,29 @@ class Stage(Device):
     set_up_motors_a_different_way = Component(EpicsSignal, 'PLC20.PROC')
     start_fake_scan = Component(EpicsSignal, 'StartFakeScan.PROC')
 
-stage = Stage('HXN{2DStage}', name='stage')
-
-
-"""
-HXN{2DStage-MtrVY}.RBV
-HXN{2DStage-MtrX}
-HXN{2DStage-MtrX}.MOVN
-HXN{2DStage-MtrX}.RBV
-HXN{2DStage-MtrX}.STOP
-HXN{2DStage-MtrY}
-HXN{2DStage-MtrY}.MOVN
-HXN{2DStage-MtrY}.RBV
-HXN{2DStage-MtrY}.STOP
-HXN{2DStage}-Asyn.AOUT
-HXN{2DStage}-Asyn.TINP
-HXN{2DStage}Home.PROC
-HXN{2DStage}NX
-HXN{2DStage}NX-RB
-HXN{2DStage}NY
-HXN{2DStage}NY-RB
-HXN{2DStage}PLC20.PROC
-HXN{2DStage}ResetPMAC.PROC
-HXN{2DStage}StartFakeScan.PROC
-HXN{2DStage}StartScan.PROC
-HXN{2DStage}TriggerRate
-HXN{2DStage}TriggerRate-RB
-HXN{2DStage}VX
-HXN{2DStage}VX.MOVN
-HXN{2DStage}VX.RBV
-HXN{2DStage}VX.STOP
-HXN{2DStage}VY
-HXN{2DStage}VY.MOVN
-HXN{2DStage}VY.RBV
-HXN{2DStage}X
-HXN{2DStage}X.MOVN
-HXN{2DStage}X.RBV
-HXN{2DStage}X.STOP
-HXN{2DStage}XStart-RB
-HXN{2DStage}XStop
-HXN{2DStage}XStop-RB
-HXN{2DStage}Y
-HXN{2DStage}Y.MOVN
-HXN{2DStage}Y.RBV
-HXN{2DStage}YStart
-HXN{2DStage}YStart-RB
-HXN{2DStage}YStop
-HXN{2DStage}YStop-RB
-"""
+hxn_stage = HXNStage('HXN{2DStage}', name='hxn_stage')
 
 
 class Flyer:
-    def __init__(self, detector, stage, motor):
+    def __init__(self, detector, hxn_stage, motor):
         self.name = 'flyer'
         self.parent = None
         self.detector = detector
-        self.hxn_stage = stage
+        self.hxn_stage = hxn_stage
         self.motor = motor
         self._traj_info = {}
         self._datum_ids = []
 
     def stage(self):
+        # This sets a filepath (template for TIFFs) and generates a Resource
+        # document in the detector.tiff Device's asset cache.
         self.detector.stage()
-    
+
+    def unstage(self):
+        # This sets a filepath (template for TIFFs) and generates a Resource
+        # document in the detector.tiff Device's asset cache.
+        self.detector.unstage()
+
 
     def kickoff(self):
         self._traj_info.update({'nx': int(self.hxn_stage.nx.get()),
@@ -123,23 +82,24 @@ class Flyer:
                 }
 
     def collect_asset_docs(self):
+        asset_docs_cache = []
         # Get the Resource which was produced when the detector was staged.
         (name, resource), = self.detector.tiff.collect_asset_docs()
         assert name == 'resource'
+        asset_docs_cache.append(('resource', resource))
         self._datum_ids.clear()
         # Generate Datum documents from scratch here, because the detector was
         # triggered externally by the DeltaTau, never by ophyd.
-        _, datum_factory = resource_factory(
-            spec=resource['spec'],
-            root=resource['root'],
-            resource_path=resource['resource_path'],
-            resource_kwargs=resource['resource_kwargs'],
-            path_semantics=resource['path_semantics'])
+        resource_uid = resource['uid']
         num_points = self._traj_info['nx'] * self._traj_info['ny']
         for i in range(num_points):
-            datum = datum_factory({'point_number': i})
-            self._datum_ids.append(datum['datum_id'])
-            yield 'datum', datum
+            datum_id = '{}/{}'.format(resource_uid, i)
+            self._datum_ids.append(datum_id)
+            datum = {'resource': resource_uid,
+                     'datum_id': datum_id,
+                     'datum_kwargs': {'point_number': i}}
+            asset_docs_cache.append(('datum', datum))
+        return tuple(asset_docs_cache)
 
     def collect(self):
         for i, datum_id in enumerate(self._datum_ids):
@@ -167,7 +127,7 @@ class FakeFlyer(Flyer):
         return self.hxn_stage.start_fake_scan.set(1)
 
 
-flyer = FakeFlyer(vis_eye1, stage, motor)
+flyer = FakeFlyer(vis_eye1, hxn_stage, motor)
 
 
 @bpp.stage_decorator([flyer])
