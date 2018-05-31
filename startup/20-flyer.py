@@ -4,6 +4,7 @@ import itertools
 import time
 from ophyd import EpicsMotor, MotorBundle, Component, EpicsSignal, Device
 from ophyd.status import SubscriptionStatus
+from ophyd import set_and_wait
 
 
 class XYMotor(MotorBundle):
@@ -12,6 +13,8 @@ class XYMotor(MotorBundle):
 
 
 motor = XYMotor('HXN{2DStage}V', name='motor')
+set_scanning = EpicsSignal('HXN{2DStage}SetScanning', name='set_scanning')
+scan_in_progress = EpicsSignal('HXN{2DStage}ScanInProgress', name='scan_in_progress')
 
 
 class HXNStage(Device):
@@ -51,9 +54,17 @@ class Flyer:
 
 
     def kickoff(self):
+        set_scanning.put(1)
+
+        def is_started(value, **kwargs):
+            print(f'===== is_started: {value}')
+            return bool(value)
+        ready_to_scan  = SubscriptionStatus(scan_in_progress,
+                                            is_started)
+
         self._traj_info.update({'nx': int(self.hxn_stage.nx.get()),
                                 'ny': int(self.hxn_stage.ny.get())})
-        return self.hxn_stage.start_scan.set(1)
+        return ready_to_scan & self.hxn_stage.start_scan.set(1)
 
     def complete(self):
         # Use whether X in the coordinate system is moving
@@ -61,8 +72,13 @@ class Flyer:
         # This might be brittle but there is no straightforward way
         # to check for done-ness, and this is easy to put together.
         # Should probably be improved to account for y also.
-        x_moving  = SubscriptionStatus(self.motor.x.motor_is_moving,
-                                       lambda value, **kwargs: not(value))
+
+        def is_done(value, **kwargs):
+            print(f'====== is_done: {value}')
+            return not value
+
+        x_moving  = SubscriptionStatus(scan_in_progress,
+                                       is_done)
         return x_moving
 
     def describe_collect(self):
@@ -82,6 +98,7 @@ class Flyer:
                 }
 
     def collect_asset_docs(self):
+        print('====== starting collection... ')
         asset_docs_cache = []
         # Get the Resource which was produced when the detector was staged.
         (name, resource), = self.detector.tiff.collect_asset_docs()
@@ -99,6 +116,7 @@ class Flyer:
                      'datum_id': datum_id,
                      'datum_kwargs': {'point_number': i}}
             asset_docs_cache.append(('datum', datum))
+        print(f'====== asset_docs_cache:\n{asset_docs_cache}, {len(asset_docs_cache)}')
         return tuple(asset_docs_cache)
 
     def collect(self):
@@ -120,11 +138,18 @@ class Flyer:
 
 class FakeFlyer(Flyer):
     def kickoff(self):
+        
+        set_scanning.put(1)
+
+        def is_started(value, **kwargs):
+            print(f'===== is_started: {value}')
+            return bool(value)
+        ready_to_scan  = SubscriptionStatus(scan_in_progress,
+                                            is_started)
+
         self._traj_info.update({'nx': int(self.hxn_stage.nx.get()),
                                 'ny': int(self.hxn_stage.ny.get())})
-        self.hxn_stage.set_up_motors_a_different_way.set(1)
-        time.sleep(1)  # DONT IMMITATE THIS -- BAD IDEA
-        return self.hxn_stage.start_fake_scan.set(1)
+        return ready_to_scan & self.hxn_stage.start_fake_scan.set(1)
 
 
 flyer = FakeFlyer(vis_eye1, hxn_stage, motor)

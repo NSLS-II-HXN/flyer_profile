@@ -78,5 +78,6 @@ for camera in [vis_eye1]:
 
     camera.stage_sigs[camera.roi1.blocking_callbacks] = 1
     camera.stage_sigs[camera.trans1.blocking_callbacks] = 1
-    camera.stage_sigs[camera.cam.trigger_mode] = 'Fixed Rate'
+    camera.stage_sigs[camera.cam.trigger_mode] = 'Sync In 2'
+    camera.stage_sigs[camera.cam.image_mode] = 'Multiple'
 
