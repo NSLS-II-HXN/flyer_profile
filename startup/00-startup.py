@@ -53,6 +53,7 @@ get_ipython().register_magics(BlueskyMagics)
 from bluesky.callbacks.best_effort import BestEffortCallback
 bec = BestEffortCallback()
 RE.subscribe(bec)
+bec.disable_plots()
 peaks = bec.peaks  # just as alias for less typing
 
 # At the end of every run, verify that files were saved and

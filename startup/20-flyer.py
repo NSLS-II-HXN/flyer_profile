@@ -83,7 +83,7 @@ class Flyer:
 
     def describe_collect(self):
         return {
-            'hxn_stage_flyer':
+            'primary':
                 {'x': {'source': '',
                        'dtype': 'number',
                        'shape': []},
