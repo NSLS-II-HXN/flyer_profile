@@ -56,8 +56,8 @@ class StandardProsilica(SingleTrigger, ProsilicaDetector):
 class StandardProsilicaWithTIFF(StandardProsilica):
     tiff = Cpt(TIFFPluginWithFileStore,
                suffix='TIFF1:',
-               write_path_template='/tmp/data/%Y/%m/%d/',
-               root='/tmp/data',
+               write_path_template='/nsls2/cam/%Y/%m/%d/',
+               root='/nsls2/cam',
                reg=db.reg)
 
 
