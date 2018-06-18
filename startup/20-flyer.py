@@ -41,17 +41,20 @@ class Flyer:
         self.motor = motor
         self._traj_info = {}
         self._datum_ids = []
+        self.detector.stage_sigs[self.detector.cam.image_mode] = 'Continuous'
 
     def stage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
         self.detector.stage()
+        self.detector.cam.acquire.put(1)
+        self.detector.tiff.capture.put(1)
 
     def unstage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
         self.detector.unstage()
-
+        self.detector.cam.acquire.put(0)
 
     def kickoff(self):
         set_scanning.put(1)
