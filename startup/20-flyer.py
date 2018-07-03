@@ -23,7 +23,7 @@ class HXNStage(Device):
     nx = Component(EpicsSignal, 'NX-RB', write_pv='NX')
     y_start = Component(EpicsSignal, 'YStart-RB', write_pv='YStart')
     y_stop = Component(EpicsSignal, 'YStop-RB', write_pv='YStop')
-    ny = Component(EpicsSignal, 'NX-RB', write_pv='NX')
+    ny = Component(EpicsSignal, 'NY-RB', write_pv='NY')
     trigger_rate = Component(EpicsSignal, 'TriggerRate-RB', write_pv='TriggerRate')
     start_scan = Component(EpicsSignal, 'StartScan.PROC')
     set_up_motors_a_different_way = Component(EpicsSignal, 'PLC20.PROC')
@@ -49,6 +49,7 @@ class Flyer:
         self.detector.stage()
         self.detector.cam.acquire.put(1)
         self.detector.tiff.capture.put(1)
+        # self.detector.tiff.
 
     def unstage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
@@ -60,7 +61,6 @@ class Flyer:
         set_scanning.put(1)
 
         def is_started(value, **kwargs):
-            print(f'===== is_started: {value}')
             return bool(value)
         ready_to_scan  = SubscriptionStatus(scan_in_progress,
                                             is_started)
@@ -77,7 +77,6 @@ class Flyer:
         # Should probably be improved to account for y also.
 
         def is_done(value, **kwargs):
-            print(f'====== is_done: {value}')
             return not value
 
         x_moving  = SubscriptionStatus(scan_in_progress,
@@ -101,7 +100,6 @@ class Flyer:
                 }
 
     def collect_asset_docs(self):
-        print('====== starting collection... ')
         asset_docs_cache = []
         # Get the Resource which was produced when the detector was staged.
         (name, resource), = self.detector.tiff.collect_asset_docs()
@@ -119,7 +117,6 @@ class Flyer:
                      'datum_id': datum_id,
                      'datum_kwargs': {'point_number': i}}
             asset_docs_cache.append(('datum', datum))
-        print(f'====== asset_docs_cache:\n{asset_docs_cache}, {len(asset_docs_cache)}')
         return tuple(asset_docs_cache)
 
     def collect(self):
@@ -145,7 +142,6 @@ class FakeFlyer(Flyer):
         set_scanning.put(1)
 
         def is_started(value, **kwargs):
-            print(f'===== is_started: {value}')
             return bool(value)
         ready_to_scan  = SubscriptionStatus(scan_in_progress,
                                             is_started)

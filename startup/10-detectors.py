@@ -53,8 +53,13 @@ class StandardProsilica(SingleTrigger, ProsilicaDetector):
                            ]}
 
 
+class CustomTIFFPluginWithFileStore(TIFFPluginWithFileStore):
+    def get_frames_per_point(self):
+        return 1
+
+
 class StandardProsilicaWithTIFF(StandardProsilica):
-    tiff = Cpt(TIFFPluginWithFileStore,
+    tiff = Cpt(CustomTIFFPluginWithFileStore,
                suffix='TIFF1:',
                write_path_template='/nsls2/cam/%Y/%m/%d/',
                root='/nsls2/cam',
@@ -80,4 +85,5 @@ for camera in [vis_eye1]:
     camera.stage_sigs[camera.trans1.blocking_callbacks] = 1
     camera.stage_sigs[camera.cam.trigger_mode] = 'Sync In 2'
     camera.stage_sigs[camera.cam.image_mode] = 'Multiple'
+    camera.stage_sigs[camera.cam.array_counter] = 0
 
