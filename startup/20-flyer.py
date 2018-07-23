@@ -1,4 +1,5 @@
-import bluesky.plans as bps
+import bluesky.plans as bp
+import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
 import itertools
 import time
@@ -41,11 +42,11 @@ class Flyer:
         self.motor = motor
         self._traj_info = {}
         self._datum_ids = []
-        self.detector.stage_sigs[self.detector.cam.image_mode] = 'Continuous'
 
     def stage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
+        self.detector.stage_sigs['cam.image_mode'] = 'Continuous'
         self.detector.stage()
         self.detector.cam.acquire.put(1)
         self.detector.tiff.capture.put(1)
@@ -156,4 +157,4 @@ flyer = FakeFlyer(vis_eye1, hxn_stage, motor)
 
 @bpp.stage_decorator([flyer])
 def plan():
-    yield from bps.fly([flyer])
+    yield from bp.fly([flyer])
