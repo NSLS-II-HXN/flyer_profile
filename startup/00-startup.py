@@ -10,24 +10,27 @@ RE = RunEngine(get_history())
 # Set up a Broker backed by a temporary directory.
 # In production, a Broker is usually backed by a Mongo database.
 import os
-import tempfile
-tempdir = tempfile.mkdtemp()
-config = {
-    'description': 'temporary',
-    'metadatastore': {
-        'module': 'databroker.headersource.mongoquery',
-        'class': 'MDS',
-        'config': {
-            'directory': tempdir,
-            'timezone': 'US/Eastern'}
-    },
-    'assets': {
-        'module': 'databroker.assets.sqlite',
-        'class': 'Registry',
-        'config': {
-            'dbpath': os.path.join(tempdir, 'assets.sqlite')}
-    }
-}
+
+config = {'description': 'HXN lab MongoDB on ws10',
+          'metadatastore': {
+              'module': 'databroker.headersource.mongo',
+              'class': 'MDS',
+              'config': {
+                  'host': 'localhost',
+                  'port': 27017,
+                  'database': 'datastore-hxnlab',
+                  'timezone': 'US/Eastern'}
+              },
+          'assets': {
+              'module': 'databroker.assets.mongo',
+              'class': 'Registry',
+              'config': {
+                  'host': 'localhost',
+                  'port': 27017,
+                  'database': 'filestore-hxnlab'}
+              }
+          }
+
 from databroker import Broker
 db = Broker.from_config(config)
 
