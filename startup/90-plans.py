@@ -50,9 +50,9 @@ def step_scan(*, cam,
     def main():
         yield from bps.mov(cam.cam.acquire_time, exposure_time)
         yield from bp.grid_scan([cam],
-                                y_motor, y_start, y_end, y_num,
-                                x_motor, x_start, x_end, x_num,
-                                True)
+                                y_motor, y_home+y_start, y_home+y_end, y_num,
+                                x_motor, x_home+x_start, x_home+x_end, x_num,
+                                False)
         yield from bps.mov(x_motor, x_home, y_motor, y_home)
 
     yield from bpp.finalize_wrapper(main(), move_home())

@@ -61,8 +61,8 @@ class CustomTIFFPluginWithFileStore(TIFFPluginWithFileStore):
 class StandardProsilicaWithTIFF(StandardProsilica):
     tiff = Cpt(CustomTIFFPluginWithFileStore,
                suffix='TIFF1:',
-               write_path_template='/nsls2/cam/%Y/%m/%d/',
-               root='/nsls2/cam',
+               write_path_template='/DATA/cam/%Y/%m/%d/',
+               root='/DATA/cam',
                reg=db.reg)
 
 
