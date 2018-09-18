@@ -13,9 +13,9 @@ class XYMotor(MotorBundle):
     y = Component(EpicsMotor, 'Y')
 
 
-motor = XYMotor('HXN{2DStage}V', name='motor')
-set_scanning = EpicsSignal('HXN{2DStage}SetScanning', name='set_scanning')
-scan_in_progress = EpicsSignal('HXN{2DStage}ScanInProgress', name='scan_in_progress')
+# motor = XYMotor('XF:03IDC-CT{MC:01}V', name='motor')
+set_scanning = EpicsSignal('XF:03IDC-CT{MC:01}SetScanning', name='set_scanning')
+scan_in_progress = EpicsSignal('XF:03IDC-CT{MC:01}ScanInProgress', name='scan_in_progress')
 
 
 class HXNStage(Device):
@@ -27,30 +27,28 @@ class HXNStage(Device):
     ny = Component(EpicsSignal, 'NY-RB', write_pv='NY')
     trigger_rate = Component(EpicsSignal, 'TriggerRate-RB', write_pv='TriggerRate')
     start_scan = Component(EpicsSignal, 'StartScan.PROC')
-    set_up_motors_a_different_way = Component(EpicsSignal, 'PLC20.PROC')
-    start_fake_scan = Component(EpicsSignal, 'StartFakeScan.PROC')
+    # start_fake_scan = Component(EpicsSignal, 'StartFakeScan.PROC')
 
-hxn_stage = HXNStage('HXN{2DStage}', name='hxn_stage')
+hxn_stage = HXNStage('XF:03IDC-CT{MC:01}', name='hxn_stage')
 
 
 class Flyer:
-    def __init__(self, detector, hxn_stage, motor):
+    def __init__(self, detector, hxn_stage):
         self.name = 'flyer'
         self.parent = None
         self.detector = detector
         self.hxn_stage = hxn_stage
-        self.motor = motor
         self._traj_info = {}
         self._datum_ids = []
 
     def stage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
-        self.detector.stage_sigs['cam.image_mode'] = 'Continuous'
+        self.detector.stage_sigs['cam.image_mode'] = 'Multiple'
+        self.detector.stage_sigs['cam.trigger_mode'] = 'Sync In 2'
         self.detector.stage()
         self.detector.cam.acquire.put(1)
-        self.detector.tiff.capture.put(1)
-        # self.detector.tiff.
+        # self.detector.tiff.capture.put(1)
 
     def unstage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
@@ -65,9 +63,9 @@ class Flyer:
             return bool(value)
         ready_to_scan  = SubscriptionStatus(scan_in_progress,
                                             is_started)
-
         self._traj_info.update({'nx': int(self.hxn_stage.nx.get()),
                                 'ny': int(self.hxn_stage.ny.get())})
+
         return ready_to_scan & self.hxn_stage.start_scan.set(1)
 
     def complete(self):
@@ -152,9 +150,16 @@ class FakeFlyer(Flyer):
         return ready_to_scan & self.hxn_stage.start_fake_scan.set(1)
 
 
-flyer = FakeFlyer(vis_eye1, hxn_stage, motor)
+flyer = Flyer(vis_eye1, hxn_stage)
 
 
 @bpp.stage_decorator([flyer])
-def plan():
+def plan(*, nx, ny):
+    yield from bps.mv(flyer.hxn_stage.nx, nx,
+                      flyer.hxn_stage.ny, ny)
+
+    yield from bps.mv(flyer.detector.cam.num_images,
+        int(flyer.hxn_stage.nx.get()) * int(flyer.hxn_stage.ny.get())
+    )
+
     yield from bp.fly([flyer])

@@ -67,7 +67,7 @@ class StandardProsilicaWithTIFF(StandardProsilica):
 
 
 ## This renaming should be reversed: no correspondance between CSS screens, PV names and ophyd....
-#xray_eye1 = StandardProsilica('XF:11IDA-BI{Bpm:1-Cam:1}', name='xray_eye1')
+# vis_eye1 = StandardProsilica('XF:03ID-BI{CAM:1}', name='vis_eye1')
 vis_eye1 = StandardProsilicaWithTIFF('XF:03ID-BI{CAM:1}', name='vis_eye1')
 
 

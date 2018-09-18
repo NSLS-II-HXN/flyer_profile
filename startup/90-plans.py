@@ -18,10 +18,10 @@ go = EpicsSignal(read_pv='HXN{2DStage}StartScan.PROC', write_pv='HXN{2DStage}Sta
 def fly_plan():
     """This is my plan"""
 
-    yield from bluesky.plan_stubs.mv(xstart, 100)
-    yield from bluesky.plan_stubs.mv(xstop,  200)
-    yield from bluesky.plan_stubs.mv(ystart, 100)
-    yield from bluesky.plan_stubs.mv(ystop,  200)
+    yield from bluesky.plan_stubs.mv(xstart, 0.100)
+    yield from bluesky.plan_stubs.mv(xstop,  0.200)
+    yield from bluesky.plan_stubs.mv(ystart, 0.100)
+    yield from bluesky.plan_stubs.mv(ystop,  0.200)
     yield from bluesky.plan_stubs.mv(nx, 3)
     yield from bluesky.plan_stubs.mv(ny, 3)
     yield from bluesky.plan_stubs.mv(go, 1)
