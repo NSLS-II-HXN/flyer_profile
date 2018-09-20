@@ -55,7 +55,7 @@ class StandardProsilica(SingleTrigger, ProsilicaDetector):
 
 class CustomTIFFPluginWithFileStore(TIFFPluginWithFileStore):
     def get_frames_per_point(self):
-        return 1
+        return self.parent.cam.num_images.get()
 
 
 class StandardProsilicaWithTIFF(StandardProsilica):
@@ -88,7 +88,7 @@ for camera in [vis_eye1]:
     # camera.stage_sigs[camera.cam.image_mode] = 'Multiple'
 
     # 'Fixed Rate' is used for step scans:
-    camera.stage_sigs['cam.image_mode'] = 'Single'
-    camera.stage_sigs['cam.trigger_mode'] = 'Fixed Rate'
+    # camera.stage_sigs['cam.image_mode'] = 'Single'
+    # camera.stage_sigs['cam.trigger_mode'] = 'Fixed Rate'
 
     camera.stage_sigs[camera.cam.array_counter] = 0

@@ -154,10 +154,11 @@ flyer = Flyer(vis_eye1, hxn_stage)
 
 
 @bpp.stage_decorator([flyer])
-def plan(*, nx, ny):
+def fly_scan(*, nx, ny, exp_time):
     yield from bps.mv(flyer.hxn_stage.nx, nx,
                       flyer.hxn_stage.ny, ny)
 
+    yield from bps.mv(flyer.detector.cam.acquire_time, exp_time)
     yield from bps.mv(flyer.detector.cam.num_images,
         int(flyer.hxn_stage.nx.get()) * int(flyer.hxn_stage.ny.get())
     )

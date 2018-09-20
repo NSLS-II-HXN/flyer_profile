@@ -15,6 +15,7 @@ ny = EpicsSignal(read_pv='HXN{2DStage}NY-RB', write_pv='HXN{2DStage}NY')
 
 go = EpicsSignal(read_pv='HXN{2DStage}StartScan.PROC', write_pv='HXN{2DStage}StartScan.PROC')
 
+'''
 def fly_plan():
     """This is my plan"""
 
@@ -30,6 +31,7 @@ def fly_plan():
     yield from sleep(2)
     # Read image: XF:03ID-BI{CAM:1}image1:ArrayData
     print('done')
+'''
 
 
 def step_scan(*, cam,
