@@ -15,6 +15,7 @@ class Flyer:
         self.detector = detector
         self.hxn_stage = hxn_stage
         self._traj_info = {}
+        self._array_size = {}
         self._datum_ids = []
 
     def stage(self):
@@ -40,7 +41,15 @@ class Flyer:
         ready_to_scan  = SubscriptionStatus(scan_in_progress,
                                             is_started)
         self._traj_info.update({'nx': int(self.hxn_stage.nx.get()),
-                                'ny': int(self.hxn_stage.ny.get())})
+                                'ny': int(self.hxn_stage.ny.get()),
+                                'x_start': self.hxn_stage.x_start.get(),
+                                'x_stop': self.hxn_stage.x_stop.get(),
+                                'y_start': self.hxn_stage.y_start.get(),
+                                'y_stop': self.hxn_stage.y_stop.get(),
+                                })
+
+        self._array_size.update({'height': self.detector.tiff.array_size.height.get(),
+                                 'width': self.detector.tiff.array_size.width.get()})
 
         return ready_to_scan & self.hxn_stage.start_scan.set(1)
 
@@ -69,8 +78,8 @@ class Flyer:
                        'shape': [self._traj_info['ny']]},
                  'image': {'source': '...',
                            'dtype': 'array',
-                           'shape': [self._traj_info['ny'],
-                                     self._traj_info['nx']],
+                           'shape': [self._array_size['height'],
+                                     self._array_size['width']],
                            'external': 'FILESTORE:'}
                  }
             }
@@ -91,25 +100,41 @@ class Flyer:
             self._datum_ids.append(datum_id)
             datum = {'resource': resource_uid,
                      'datum_id': datum_id,
-                     'datum_kwargs': {'point_number': i}}
+                     'datum_kwargs': {'point_number': 0}}
             asset_docs_cache.append(('datum', datum))
         return tuple(asset_docs_cache)
 
     def collect(self):
-        for i, datum_id in enumerate(self._datum_ids):
-            now = time.time()
-            yield {
-                'data': {
-                    'x': 0,  # TODO interpolate
-                    'y': 0,  # TODO interpolate
-                    'image': datum_id},
-                'timestamps': {
-                    'x': now,
-                    'y': now,
-                    'image': now},
-                'time': now,
-                'seq_num': 1 + i,
-                'filled': {'image': False}}
+        assert len(self._datum_ids) == self._traj_info['nx'] * self._traj_info['ny']
+
+        nx = self._traj_info['nx']
+        x_start = self._traj_info['x_start']
+        x_stop = self._traj_info['x_stop']
+
+        ny = self._traj_info['ny']
+        y_start = self._traj_info['y_start']
+        y_stop = self._traj_info['y_stop']
+
+        i = 0
+        # y is a slow axis
+        for y in np.linspace(y_start, y_stop, ny):
+            # x is a fast axis
+            for x in np.linspace(x_start, x_stop, nx):
+                datum_id = self._datum_ids[i]
+                i += 1
+                now = time.time()
+                yield {
+                    'data': {
+                        'x': x,
+                        'y': y,
+                        'image': datum_id},
+                    'timestamps': {
+                        'x': now,
+                        'y': now,
+                        'image': now},
+                    'time': now,
+                    'seq_num': i,
+                    'filled': {'image': False}}
 
 
 class HXNStage(Device):
@@ -130,7 +155,6 @@ hxn_stage = HXNStage('XF:03IDC-CT{MC:01}', name='hxn_stage')
 flyer = Flyer(vis_eye1, hxn_stage)
 
 
-@bpp.stage_decorator([flyer])
 def fly_scan(*, x_start, x_stop, nx, y_start, y_stop, ny, exp_time, trigger_rate=7, md={}):
     """Fly scan plan with a stage (X and Y motors) and a camera.
 
@@ -172,9 +196,11 @@ def fly_scan(*, x_start, x_stop, nx, y_start, y_stop, ny, exp_time, trigger_rate
         flyer.hxn_stage.y_stop, y_stop,
         flyer.hxn_stage.ny, ny,
 
+        # Trigger rate:
         flyer.hxn_stage.trigger_rate, trigger_rate,
     )
 
+    yield from bps.sleep(1.0)
     for c in flyer.hxn_stage.component_names:
         print(f'{getattr(flyer.hxn_stage, c).read()}')
 
@@ -183,9 +209,16 @@ def fly_scan(*, x_start, x_stop, nx, y_start, y_stop, ny, exp_time, trigger_rate
         int(flyer.hxn_stage.nx.get()) * int(flyer.hxn_stage.ny.get())
     )
 
-    md.update({'x_start': x_start, 'x_stop': x_stop, 'nx': nx,
-               'y_start': y_start, 'y_stop': y_stop, 'ny': nx,
-               'exp_time': exp_time, 'trigger_rate': trigger_rate,
-               })
+    # md.update({'x_start': x_start, 'x_stop': x_stop, 'nx': nx,
+    #            'y_start': y_start, 'y_stop': y_stop, 'ny': nx,
+    #            'exp_time': exp_time, 'trigger_rate': trigger_rate,
+    #            })
 
-    yield from bp.fly([flyer], md=md)
+    yield from bps.sleep(1.0)
+
+    @bpp.stage_decorator([flyer])
+    def _fly_scan():
+        yield from bp.fly([flyer])
+
+    yield from _fly_scan()
+
