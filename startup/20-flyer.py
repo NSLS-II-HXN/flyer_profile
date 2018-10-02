@@ -21,10 +21,10 @@ class Flyer:
     def stage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
+        self.detector.is_flying = True
         self.detector.stage_sigs['cam.image_mode'] = 'Multiple'
         self.detector.stage_sigs['cam.trigger_mode'] = 'Sync In 2'
         self.detector.stage()
-        self.detector.is_flying = True
         self.detector.cam.acquire.put(1)
         # self.detector.tiff.capture.put(1)
 
