@@ -24,6 +24,7 @@ class Flyer:
         self.detector.stage_sigs['cam.image_mode'] = 'Multiple'
         self.detector.stage_sigs['cam.trigger_mode'] = 'Sync In 2'
         self.detector.stage()
+        self.detector.is_flying = True
         self.detector.cam.acquire.put(1)
         # self.detector.tiff.capture.put(1)
 
@@ -31,6 +32,7 @@ class Flyer:
         # This sets a filepath (template for TIFFs) and generates a Resource
         # document in the detector.tiff Device's asset cache.
         self.detector.unstage()
+        self.detector.is_flying = False
         self.detector.cam.acquire.put(0)
 
     def kickoff(self):
@@ -100,7 +102,7 @@ class Flyer:
             self._datum_ids.append(datum_id)
             datum = {'resource': resource_uid,
                      'datum_id': datum_id,
-                     'datum_kwargs': {'point_number': 0}}
+                     'datum_kwargs': {'point_number': i}}
             asset_docs_cache.append(('datum', datum))
         return tuple(asset_docs_cache)
 
