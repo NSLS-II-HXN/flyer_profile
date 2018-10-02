@@ -72,10 +72,25 @@ class StandardProsilica(SingleTriggerV33, ProsilicaDetectorV33):
     # only so that it can ensure that the plugin is not auto-saving.
     tiff = Cpt(TIFFPluginEnsuredOff, suffix='TIFF1:')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._is_flying = False
+
+    @property
+    def is_flying(self):
+        return self._is_flying
+
+    @is_flying.setter
+    def is_flying(self, is_flying):
+        self._is_flying = is_flying
+
 
 class CustomTIFFPluginWithFileStore(TIFFPluginWithFileStore):
     def get_frames_per_point(self):
-        return self.parent.cam.num_images.get()
+        if not self.parent.is_flying:
+            return self.parent.cam.num_images.get()
+        else:
+            return 1
 
 
 class StandardProsilicaWithTIFF(StandardProsilica):
