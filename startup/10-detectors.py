@@ -121,7 +121,7 @@ vis_eye1 = StandardProsilicaWithTIFF('XF:03ID-BI{CAM:1}', name='vis_eye1')
 vis_eye1.cam.ensure_nonblocking()
 
 vis_eye1_hdf5 = StandardProsilicaWithHDF5('XF:03ID-BI{CAM:1}', name='vis_eye1_hdf5')
-
+vis_eye1_hdf5.cam.ensure_nonblocking()
 
 for camera in [vis_eye1, vis_eye1_hdf5]:
     camera.read_attrs = ['stats1', 'stats2', 'stats3', 'stats4', 'stats5']
