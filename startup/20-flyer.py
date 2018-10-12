@@ -157,6 +157,10 @@ hxn_stage = HXNStage('XF:03IDC-CT{MC:01}', name='hxn_stage')
 flyer = Flyer(vis_eye1, hxn_stage)
 
 
+class DataMismatch(Exception):
+    ...
+
+
 def fly_scan(*, x_start, x_stop, nx, y_start, y_stop, ny, exp_time, trigger_rate=7, md={}):
     """Fly scan plan with a stage (X and Y motors) and a camera.
 

@@ -47,6 +47,11 @@ class TIFFPluginWithFileStore(TIFFPlugin, FileStoreTIFFIterativeWrite):
     pass
 
 
+class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
+    """Add this as a component to detectors that write HDF5s."""
+    pass
+
+
 class TIFFPluginEnsuredOff(TIFFPlugin):
     """Add this as a component to detectors that do not write TIFFs."""
     def __init__(self, *args, **kwargs):
@@ -100,14 +105,28 @@ class StandardProsilicaWithTIFF(StandardProsilica):
                root='/DATA/cam')
 
 
+class StandardProsilicaWithHDF5(StandardProsilica):
+    hdf5 = Cpt(HDF5PluginWithFileStore,
+               suffix='HDF1:',
+               write_path_template='/DATA/cam/%Y/%m/%d/',
+               root='/DATA/cam',
+               reg=db.reg)
+
+
 # vis_eye1 = StandardProsilica('XF:03ID-BI{CAM:1}', name='vis_eye1')
 vis_eye1 = StandardProsilicaWithTIFF('XF:03ID-BI{CAM:1}', name='vis_eye1')
 vis_eye1.cam.ensure_nonblocking()
 
+vis_eye1_hdf5 = StandardProsilicaWithHDF5('XF:03ID-BI{CAM:1}', name='vis_eye1_hdf5')
 
-for camera in [vis_eye1]:
+
+for camera in [vis_eye1, vis_eye1_hdf5]:
     camera.read_attrs = ['stats1', 'stats2', 'stats3', 'stats4', 'stats5']
-    camera.read_attrs.append('tiff')
+    if 'hdf' not in camera.name:
+        camera.read_attrs.append('tiff')
+    else:
+        camera.read_attrs.append('hdf5')
+
     camera.tiff.read_attrs = []  # leaving just the 'image'
     for stats_name in ['stats1', 'stats2', 'stats3', 'stats4', 'stats5']:
         stats_plugin = getattr(camera, stats_name)
