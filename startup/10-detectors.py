@@ -49,7 +49,11 @@ class TIFFPluginWithFileStore(TIFFPlugin, FileStoreTIFFIterativeWrite):
 
 class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     """Add this as a component to detectors that write HDF5s."""
-    pass
+    def get_frames_per_point(self):
+        if not self.parent.is_flying:
+            return self.parent.cam.num_images.get()
+        else:
+            return 1
 
 
 class TIFFPluginEnsuredOff(TIFFPlugin):
@@ -109,8 +113,7 @@ class StandardProsilicaWithHDF5(StandardProsilica):
     hdf5 = Cpt(HDF5PluginWithFileStore,
                suffix='HDF1:',
                write_path_template='/DATA/cam/%Y/%m/%d/',
-               root='/DATA/cam',
-               reg=db.reg)
+               root='/DATA/cam')
 
 
 # vis_eye1 = StandardProsilica('XF:03ID-BI{CAM:1}', name='vis_eye1')
