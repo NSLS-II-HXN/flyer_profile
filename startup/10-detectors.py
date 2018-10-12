@@ -77,10 +77,6 @@ class StandardProsilica(SingleTriggerV33, ProsilicaDetectorV33):
     roi4 = Cpt(ROIPlugin, 'ROI4:')
     proc1 = Cpt(ProcessPlugin, 'Proc1:')
 
-    # This class does not save TIFFs. We make it aware of the TIFF plugin
-    # only so that it can ensure that the plugin is not auto-saving.
-    tiff = Cpt(TIFFPluginEnsuredOff, suffix='TIFF1:')
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._is_flying = False
@@ -116,21 +112,23 @@ class StandardProsilicaWithHDF5(StandardProsilica):
                root='/DATA/cam')
 
 
-# vis_eye1 = StandardProsilica('XF:03ID-BI{CAM:1}', name='vis_eye1')
-vis_eye1 = StandardProsilicaWithTIFF('XF:03ID-BI{CAM:1}', name='vis_eye1')
+# This camera is the default one (with the HDF5 plugin):
+vis_eye1 = StandardProsilicaWithHDF5('XF:03ID-BI{CAM:1}', name='vis_eye1')
 vis_eye1.cam.ensure_nonblocking()
 
-vis_eye1_hdf5 = StandardProsilicaWithHDF5('XF:03ID-BI{CAM:1}', name='vis_eye1_hdf5')
-vis_eye1_hdf5.cam.ensure_nonblocking()
+# vis_eye1 = StandardProsilica('XF:03ID-BI{CAM:1}', name='vis_eye1')
+vis_eye1_tiff = StandardProsilicaWithTIFF('XF:03ID-BI{CAM:1}', name='vis_eye1_tiff')
+vis_eye1_tiff.cam.ensure_nonblocking()
 
-for camera in [vis_eye1, vis_eye1_hdf5]:
+for camera in [vis_eye1, vis_eye1_tiff]:
     camera.read_attrs = ['stats1', 'stats2', 'stats3', 'stats4', 'stats5']
-    if 'hdf' not in camera.name:
-        camera.read_attrs.append('tiff')
-    else:
-        camera.read_attrs.append('hdf5')
+    for plugin_type in ['hdf5', 'tiff']:
+        if hasattr(camera, plugin_type):
+            camera.read_attrs.append(plugin_type)
 
-    camera.tiff.read_attrs = []  # leaving just the 'image'
+    if hasattr(camera, 'tiff'):
+        camera.tiff.read_attrs = []  # leaving just the 'image'
+
     for stats_name in ['stats1', 'stats2', 'stats3', 'stats4', 'stats5']:
         stats_plugin = getattr(camera, stats_name)
         stats_plugin.read_attrs = ['total']
@@ -148,6 +146,7 @@ for camera in [vis_eye1, vis_eye1_hdf5]:
     camera.stage_sigs[camera.cam.trigger_mode] = 'Fixed Rate'
 
     camera.stage_sigs[camera.cam.array_counter] = 0
-    camera.stage_sigs[camera.tiff.array_counter] = 0
+    if hasattr(camera, 'tiff'):
+        camera.stage_sigs[camera.tiff.array_counter] = 0
     camera.stats1.total.kind = 'hinted'
 

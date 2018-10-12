@@ -17,6 +17,12 @@ class Flyer:
         self._traj_info = {}
         self._array_size = {}
         self._datum_ids = []
+        if hasattr(self.detector, 'hdf5'):
+            self.plugin_type = 'hdf5'
+        elif hasattr(self.detector, 'tiff'):
+            self.plugin_type = 'tiff'
+        else:
+            raise ValueError(f'No hdf5 or tiff plugins were found for {self.detector.name}')
 
     def stage(self):
         # This sets a filepath (template for TIFFs) and generates a Resource
@@ -50,8 +56,8 @@ class Flyer:
                                 'y_stop': self.hxn_stage.y_stop.get(),
                                 })
 
-        self._array_size.update({'height': self.detector.tiff.array_size.height.get(),
-                                 'width': self.detector.tiff.array_size.width.get()})
+        self._array_size.update({'height': getattr(self.detector, self.plugin_type).array_size.height.get(),
+                                 'width': getattr(self.detector, self.plugin_type).array_size.width.get()})
 
         return ready_to_scan & self.hxn_stage.start_scan.set(1)
 
@@ -88,8 +94,10 @@ class Flyer:
 
     def collect_asset_docs(self):
         asset_docs_cache = []
+
         # Get the Resource which was produced when the detector was staged.
-        (name, resource), = self.detector.tiff.collect_asset_docs()
+        (name, resource), = getattr(self.detector, self.plugin_type).collect_asset_docs()
+
         assert name == 'resource'
         asset_docs_cache.append(('resource', resource))
         self._datum_ids.clear()
