@@ -33,10 +33,11 @@ smp_cntr = SampleCentering('XF:03IDC-ES{Smpl:1-Ax:', name='smp_cntr')
 
 # Dropped HDF5 frames:
 dropped_hdf5_frames = EpicsSignalRO('XF:03ID-BI{CAM:1}HDF1:DroppedArrays_RBV', name='dropped_hdf5_frames')
+total_bad_frames = EpicsSignalRO('XF:03ID-BI{CAM:1}cam1:PSBadFrameCounter_RBV', name='total_bad_frames')
 
 sd.baseline = [sample, laser, cam_motors,
                osa,
                smp_cntr,
-               dropped_hdf5_frames,
+               dropped_hdf5_frames, total_bad_frames,
               ]
 
