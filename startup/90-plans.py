@@ -1,6 +1,7 @@
 import bluesky.preprocessors as bpp
 from bluesky.plan_stubs import sleep, abs_set
 import bluesky
+from bluesky.plans import rel_spiral_square, rel_spiral_fermat, rel_spiral
 from ophyd import EpicsScaler, EpicsSignal
 
 
@@ -39,8 +40,40 @@ def step_scan(*, detector,
               y_start=-5, y_end=5, y_num=11,
               exposure_time=0.01, num_images=1):
     yield from bps.mv(detector.cam.num_images, num_images)
+    yield from bps.mv(flyer.detector.cam.acquire_time, exposure_time)
     yield from rel_grid_scan([detector], y_motor, y_start, y_end, y_num, x_motor, x_start, x_end, x_num, False)
 
+
+def spiral(*, detector,
+           x_motor, y_motor,
+           x_range = 1, x_num=11,
+           y_range = 1, y_num=11,
+           dr = 0.1, dr_y = None,
+           nth = 5,
+           exposure_time=0.01, num_images=1):
+    yield from bps.mv(detector.cam.num_images, num_images)
+    yield from bps.mv(flyer.detector.cam.acquire_time, exposure_time)
+    yield from rel_spiral([det], motor1, motor2, x_range=x_range,y_range=y_range, dr=dr,dr_y= dr_y, nth=nth)
+
+def fermat(*, detector,
+           x_motor, y_motor,
+           x_range = 1, x_num=11,
+           y_range = 1,y_num=11,
+           dr = 0.1, factor = 1,
+           exposure_time=0.01, num_images=1):
+    yield from bps.mv(detector.cam.num_images, num_images)
+    yield from bps.mv(flyer.detector.cam.acquire_time, exposure_time)
+    yield from rel_spiral_fermat([det], motor1, motor2,
+                     x_range=x_range, y_range=y_range, dr=dr, factor=factor, tilt=0.0)
+
+def spiral_square(*, detector,
+           x_motor, y_motor,
+           x_range = 1, x_num=11,
+           y_range = 1, y_num=11,
+           exposure_time=0.01, num_images=1):
+    yield from bps.mv(detector.cam.num_images, num_images)
+    yield from bps.mv(flyer.detector.cam.acquire_time, exposure_time)
+    yield from rel_spiral_square([det], motor1, motor2,x_range=x_range, y_range=y_range, x_num=x_num, y_num=y_num)
 
 '''
 def step_scan(*, cam,
