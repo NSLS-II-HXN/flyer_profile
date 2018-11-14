@@ -31,9 +31,12 @@ osa = MotorBundle('XF:03IDC-ES{Fltr:1-Ax:', name='osa')
 # Sample centering in mc02-ecc100.opi:
 smp_cntr = SampleCentering('XF:03IDC-ES{Smpl:1-Ax:', name='smp_cntr')
 
+# Dropped HDF5 frames:
+dropped_hdf5_frames = EpicsSignalRO('XF:03ID-BI{CAM:1}HDF1:DroppedArrays_RBV', name='dropped_hdf5_frames')
 
 sd.baseline = [sample, laser, cam_motors,
                osa,
                smp_cntr,
+               dropped_hdf5_frames,
               ]
 
