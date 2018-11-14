@@ -33,7 +33,16 @@ def fly_plan():
     print('done')
 '''
 
+def step_scan(*, detector,
+              x_motor, y_motor,
+              x_start=-5, x_end=5, x_num=11,
+              y_start=-5, y_end=5, y_num=11,
+              exposure_time=0.01, num_images=1):
+    yield from bps.mv(detector.cam.num_images, num_images)
+    yield from rel_grid_scan([detector], y_motor, y_start, y_end, y_num, x_motor, x_start, x_end, x_num, False)
 
+
+'''
 def step_scan(*, cam,
               x_motor=None, x_start=-5, x_end=5, x_num=11,
               y_motor=None, y_start=-5, y_end=5, y_num=11,
@@ -58,4 +67,4 @@ def step_scan(*, cam,
         yield from bps.mov(x_motor, x_home, y_motor, y_home)
 
     yield from bpp.finalize_wrapper(main(), move_home())
-
+'''

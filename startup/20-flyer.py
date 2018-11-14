@@ -84,7 +84,7 @@ class Flyer:
                  'y': {'source': '',
                        'dtype': 'number',
                        'shape': [self._traj_info['ny']]},
-                 'image': {'source': '...',
+                 f'{self.detector.name}_image': {'source': '...',
                            'dtype': 'array',
                            'shape': [self._array_size['height'],
                                      self._array_size['width']],
@@ -137,14 +137,14 @@ class Flyer:
                     'data': {
                         'x': x,
                         'y': y,
-                        'image': datum_id},
+                        f'{self.detector.name}_image': datum_id},
                     'timestamps': {
                         'x': now,
                         'y': now,
-                        'image': now},
+                        f'{self.detector.name}_image': now},
                     'time': now,
                     'seq_num': i,
-                    'filled': {'image': False}}
+                    'filled': {f'{self.detector.name}_image': False}}
 
 
 class HXNStage(Device):
