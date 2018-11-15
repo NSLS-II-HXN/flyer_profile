@@ -1,0 +1,10 @@
+Motion axes
+-----------
+1 - XF:03IDC-ES{Smpl:1-Ax:X}Mtr
+2 - XF:03IDC-ES{Smpl:1-Ax:Y}Mtr
+3 - XF:03IDC-ES{Smpl:1-Ax:Theta}Mtr
+4 - XF:03IDC-ES{Laser:1-Ax:X}Mtr
+5 - XF:03IDC-ES{Laser:1-Ax:Y}Mtr
+6 - XF:03IDC-ES{Cam:1-Ax:X}Mtr
+7 - XF:03IDC-ES{Cam:1-Ax:Y}Mtr
+8 - XF:03IDC-ES{Cam:1-Ax:Z}Mtr

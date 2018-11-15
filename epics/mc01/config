@@ -1,0 +1,4 @@
+NAME=mc01
+USER=softioc
+PORT=4001
+HOST=xf03idc-ws10

@@ -1,0 +1,137 @@
+;#define MYRES 204.8
+#define MYRES 10000
+
+
+
+
+
+I5213=10      ; segmentation time
+I5220=50      ; lookahead
+I5250=1       ; enable
+&2 Undefine All
+
+&2 Open FORWARD Clear
+
+If (M145=1 AND M245=1)    ; Properly position referenced?
+  Q7 = P1 / MYRES
+  Q8 = P2 / MYRES
+Else
+  M5282=1     ; Motors not referenced
+EndIf
+
+Close
+
+
+
+&2 Open INVERSE Clear
+
+P1 = Q7 * MYRES
+P2 = Q8 * MYRES
+
+Close
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OPEN PROG 16 Clear
+
+P1610 = 1 ; Scan in progress
+
+Abs
+Linear
+TA10
+TM2000
+TS0
+
+
+
+P1607 = ((P1601 - P1600) / P1604 ) * P1606 * MYRES
+F(P1607/MYRES)          ; feedrate = ((P1601 - P1600) / P1604 ) * P1606 and correct for units/mres
+
+; P1600 - starting X position
+; P1601 - Stopping X Position
+; P1602 - starting Y position
+; P1603 - Stopping Y Position
+; P1604 - NX
+; P1605 - NY
+; P1606 - Trigger Rate
+
+
+; Starting positions, ending positions, npoints
+Q101 = P1600 * MYRES    ; Starting X position
+Q102 = P1602 * MYRES    ; Starting Y position
+
+Q103 = MYRES * (P1601 - P1600) / (P1604 - 1)    ; X step size
+Q104 = MYRES * (P1603 - P1602) / (P1605 - 1)    ; Y step size
+
+Q105 = Q103 / 5   ; X Trigger size
+Q106 = Q104 / 5   ; Y Trigger size
+
+Q107 = P1601 * MYRES    ; Stopping X position
+Q108 = P1603 * MYRES    ; Stopping Y position
+
+RAPID X ((Q101 - Q105)/MYRES) Y (Q102/MYRES)     ; Starting position
+Dwell 100  ; Pause before moving
+
+; Attempt to avoid a trigger in beginning (but not guaranteed)
+M108 = 999999999          ; Compare position A
+M109 = 999999999          ; Compare position B
+M110 = 0                  ; Auto-increment distance
+M112 = 0                  ; Starting state
+M111 = 1                  ; Forcing starting state
+
+M108 = Q102 + Q104/2 - Q106/2   ; Compare position A
+M109 = Q102 - Q104/2 + Q106/2   ; Compare position B
+M110 = Q104                     ; Auto-increment distance
+M112 = 0                        ; Starting state
+M111 = 1                        ; Forcing starting state
+
+Dwell 10
+
+Q110 = M101+Q105
+Q111 = Q110+Q105-Q103
+
+While (Q102 < Q108 + Q104/2)
+  RAPID X ((Q101 - Q105)/MYRES) Y (Q102/MYRES) ; <LF> (return to starting X at new Y)
+  Dwell 1000
+
+  M108 = Q110                 ; Compare position A
+  M109 = Q111                 ; Compare position B
+  M110 = Q103                 ; Auto-increment distance
+  M112 = 0                    ; Starting state
+  M111 = 1                    ; Forcing starting state
+  Dwell 10
+
+  LINEAR X ((Q107 + Q103/2)/MYRES) Y (Q102/MYRES)      ; Scan across X
+  Dwell 100
+  M108 = 2*Q107               ; Compare position A
+  M109 = 2*Q107               ; Compare position B
+  M110 = 0                    ; Auto-increment distance
+  M112 = 0                    ; Starting state
+  M111 = 1                    ; Forcing starting state
+  Dwell 10
+
+  Q102 = Q102 + Q104              ; Increment Q2 to for next Y value
+
+  RAPID X ((Q107 + Q103/2)/MYRES) Y (Q102/MYRES)      ; <CR><LF> (return to starting X at new Y)
+  Dwell 0
+EndWhile
+
+P1610 = 0  ; Scan finished
+Close
+

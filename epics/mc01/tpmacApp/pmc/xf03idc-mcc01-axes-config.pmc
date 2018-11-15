@@ -1,0 +1,80 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #1
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off (0 = off, 1 = on)
+;P401 = 1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P802 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7010 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P402=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P902 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7020 = 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #3
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P403=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P1002 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7030 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #4
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P404=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P1102 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7040 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #5
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P405=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P1202 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7110 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #6
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P406=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P1302 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7120 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #7
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P407=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P1402 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7130 = 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; axis #8
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; encoder loss on/off
+;P408=1
+; post-home move (0 = return to prev, 1 = stay at zero)
+P802 = 1
+; encoder decode (3 = CW, 7 = CCW)
+; I7140 = 

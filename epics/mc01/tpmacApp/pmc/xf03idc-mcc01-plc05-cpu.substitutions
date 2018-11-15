@@ -1,0 +1,1 @@
+file "PLC_cpu_load.pmc" { pattern {PLC} {5} }

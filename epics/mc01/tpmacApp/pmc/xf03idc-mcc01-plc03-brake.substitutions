@@ -1,0 +1,13 @@
+file "PLC_brake.pmc" 
+{
+pattern
+{ PLC,  BRAKE,  MOTOR,  APPLY,  RELEASE }
+# { 16,   32,     3,      0,      1  }
+}
+
+# PLC     PLC No. used to run
+# BRAKE   TPMAC output port
+# MOTOR   motor axis
+# APPLY   level of output used to engage brake
+# RELEASE level of output used to release brake
+

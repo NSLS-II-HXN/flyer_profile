@@ -1,0 +1,5 @@
+#include "mc01_backup.CFG"
+#include "IVarables.pmc"
+#include "PLC16_RunScan.pmc"
+#include "PLC20_SetupScan.pmc"
+#include "PROG16_XYScan.pmc"

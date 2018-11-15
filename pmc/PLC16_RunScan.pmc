@@ -1,0 +1,33 @@
+
+
+Open PLC 16 Clear
+
+; P1600..1107 are used by the motion program and EPICS for input
+; P1610 Is the Error status
+
+P1610 = 0     ; No error
+
+;CMD"#1$#2$"
+I5911 = 200 * 8388608/I10
+while (I5911 > 0) endw
+
+CMD"#1j/#2j/"
+I5911 = 200 * 8388608/I10
+while (I5911 > 0) endw
+
+if (M145=1)
+and (M245=1)
+
+  CMD "&2 #1->I #2->I"
+  I5911 = 20 * 8388608/I10 While(I5911 > 0)EndW
+  CMD "&2B16R"
+  I5911 = 20 * 8388608/I10 While(I5911 > 0)EndW
+Else
+  P1610 = 1   ; Motor not homed
+endif
+
+disable plc 16
+close
+
+
+

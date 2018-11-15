@@ -1,0 +1,5 @@
+I116=6.4      ; Ixx16 Motor xx Maximum Program Velocity
+I117=0.25     ; Ixx17 Motor xx Maximum Program Acceleration
+
+I216=6.4      ; Ixx16 Motor xx Maximum Program Velocity
+I217=0.25     ; Ixx17 Motor xx Maximum Program Acceleration

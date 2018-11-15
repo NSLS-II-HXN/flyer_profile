@@ -1,0 +1,13 @@
+Open PLC 20 Clear
+
+
+P1600 =  0.000    ; P1600 - starting X position
+P1601 =  0.100    ; P1601 - Stopping X Position
+P1602 =  0.000    ; P1602 - starting Y position
+P1603 =  0.100    ; P1603 - Stopping Y Position
+P1604 = 5         ; P1604 - NX
+P1605 = 3         ; P1605 - NY
+P1606 = 1         ; P1606 - Trigger Rate
+
+Disable PLC 20
+Close

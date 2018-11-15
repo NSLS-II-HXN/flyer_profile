@@ -1,0 +1,43 @@
+TEMPLATE_DIR1 = /usr/share/epics-pmacutil-dev/pmc
+TEMPLATE_DIR2 = $(TOP)/pmc
+
+vpath %.pmc $(dir $(PMC)) $(dir $(PMC_INSTALLS)) $(dir $(PMC_TEMPLATES)) $(TEMPLATE_DIR1) $(TEMPLATE_DIR2)
+
+INSTALL_PMCS += $(addprefix $(INSTALL_PMC)/,$(notdir $(PMC)))
+INSTALL_PMC_INSTALLS += $(addprefix $(INSTALL_PMC)/,$(notdir $(PMC_INSTALLS)))
+INSTALL_PMC_TEMPLATES += $(addprefix $(INSTALL_PMC)/,$(notdir $(PMC_TEMPLATES)))
+
+all: install
+
+install: buildInstall
+
+buildInstall: build
+
+rebuild: clean install
+
+build: $(INSTALL_PMC) $(INSTALL_PMC_TEMPLATES) $(INSTALL_PMC_INSTALLS) $(INSTALL_PMCS) clean_templates
+
+realclean: clean 
+
+clean: clean_templates
+	@$(RM) $(PMC)
+
+clean_templates:
+	$(RM) $(INSTALL_PMC_TEMPLATES)
+
+.PHONY: all build install clean rebuild buildInstall realclean
+
+$(INSTALL_PMC)/%.pmc: %.substitutions
+	@$(RM) $@
+	$(ECHO) "Building PMAC file $@"
+	msi -S $^ -I $(TEMPLATE_DIR1) -I $(TEMPLATE_DIR2) -o $*.tmp
+	$(ECHO) "Installing PMAC file $@"
+	$(MV) $*.tmp $@
+	
+$(INSTALL_PMC)/%.pmc: %.pmc
+	$(ECHO) "Installing PMAC file $@ from $<"
+	$(CP) $< $@
+	
+$(INSTALL_PMC): 
+	$(MKDIR) $(INSTALL_PMC)
+
